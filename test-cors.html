@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Проверка CORS</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            padding: 32px 16px;
+            color: #eaf0ff;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #101833, #263b68);
+        }
+        main {
+            width: min(900px, 100%);
+            margin: auto;
+            padding: 28px;
+            border: 1px solid #405586;
+            border-radius: 14px;
+            background: #17213d;
+            box-shadow: 0 16px 45px rgb(0 0 0 / 30%);
+        }
+        h1 { margin-top: 0; }
+        .grid {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 14px;
+        }
+        label { font-weight: 700; }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #6175a8;
+            border-radius: 6px;
+            color: #fff;
+            background: #202d50;
+        }
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+            font-family: Consolas, monospace;
+        }
+        button {
+            margin-top: 18px;
+            padding: 11px 20px;
+            border: 0;
+            border-radius: 6px;
+            color: #fff;
+            background: #5379ed;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        pre {
+            min-height: 170px;
+            overflow: auto;
+            padding: 16px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            background: #0d1427;
+        }
+        .success { border-left: 5px solid #37c871; }
+        .error { border-left: 5px solid #ff5964; }
+        @media (max-width: 650px) {
+            .grid { grid-template-columns: 1fr; gap: 7px; }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Тестирование CORS</h1>
+        <div class="grid">
+            <label for="apiUrl">URL API</label>
+            <input id="apiUrl" value="https://localhost:7193/api/Categories">
+
+            <label for="method">HTTP-метод</label>
+            <select id="method">
+                <option>GET</option>
+                <option>POST</option>
+                <option>PUT</option>
+                <option>DELETE</option>
+            </select>
+
+            <label for="body">Тело запроса</label>
+            <textarea id="body">{
+  "name": "Тестовая категория",
+  "description": "Создано из CORS-клиента"
+}</textarea>
+        </div>
+
+        <button type="button" onclick="sendRequest()">Отправить запрос</button>
+        <h2>Результат</h2>
+        <pre id="result">Запрос ещё не отправлен.</pre>
+    </main>
+
+    <script>
+        async function sendRequest() {
+            const apiUrl = document.getElementById('apiUrl').value.trim();
+            const method = document.getElementById('method').value;
+            const bodyText = document.getElementById('body').value.trim();
+            const resultDiv = document.getElementById('result');
+
+            resultDiv.className = '';
+            resultDiv.textContent = 'Отправка запроса...';
+
+            try {
+                const options = {
+                    method,
+                    headers: { 'Content-Type': 'application/json' }
+                };
+
+                if (['POST', 'PUT', 'PATCH'].includes(method) && bodyText) {
+                    options.body = bodyText;
+                }
+
+                const response = await fetch(apiUrl, options);
+                const headers = Object.fromEntries(response.headers);
+                let output = `Статус: ${response.status} ${response.statusText}\n`;
+                output += `Заголовки ответа:\n${JSON.stringify(headers, null, 2)}\n\n`;
+
+                if (response.headers.get('content-type')?.includes('application/json')) {
+                    const data = await response.json();
+                    output += `Тело ответа:\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    output += `Тело ответа:\n${await response.text()}`;
+                }
+
+                resultDiv.className = 'success';
+                resultDiv.textContent = output;
+            } catch (error) {
+                resultDiv.className = 'error';
+                resultDiv.textContent = `Ошибка: ${error.message}\n\nПроверьте консоль браузера. Ошибка "Access to fetch ... has been blocked by CORS policy" означает, что сервер не разрешил источник этой страницы.`;
+                console.error('Fetch error:', error);
+            }
+        }
+    </script>
+</body>
+</html>

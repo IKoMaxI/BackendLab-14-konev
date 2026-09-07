@@ -1,0 +1,51 @@
+@StoreApiLR11_HostAddress = https://localhost:7193
+
+POST {{StoreApiLR11_HostAddress}}/api/Products
+Content-Type: application/json
+
+{
+  "name": "",
+  "description": "",
+  "price": -10,
+  "stock": 1,
+  "categoryId": 1
+}
+
+###
+
+POST {{StoreApiLR11_HostAddress}}/api/Orders
+Content-Type: application/json
+
+{
+  "customerId": 99999,
+  "items": [
+    {
+      "productId": 1,
+      "quantity": 1
+    }
+  ]
+}
+
+###
+
+POST {{StoreApiLR11_HostAddress}}/api/Orders
+Content-Type: application/json
+
+{
+  "customerId": 1,
+  "items": [
+    {
+      "productId": 1,
+      "quantity": 9999
+    }
+  ]
+}
+
+###
+
+DELETE {{StoreApiLR11_HostAddress}}/api/Categories/1
+
+###
+
+GET {{StoreApiLR11_HostAddress}}/api/test-crash
+Accept: application/problem+json
