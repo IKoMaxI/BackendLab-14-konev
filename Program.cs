@@ -91,7 +91,7 @@ app.Map("/error-development", async (HttpContext context) =>
     });
 });
 
-app.MapGet("/api/test-crash", () =>
+app.MapGet("/api/test-crash", IResult () =>
 {
     throw new InvalidOperationException("Test unhandled exception");
 });
